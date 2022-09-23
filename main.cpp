@@ -41,16 +41,35 @@ std::vector<int> createHeightsVector(int size) {
     return heights;
 }
 
-void drawRectangles(std::vector<int> heights, sf::RenderWindow &window) {
+void drawRectangles(std::vector<int> heights, sf::RenderWindow &window, int first, int second) {
     float rec_width = (float)SCREEN_WIDHT/heights.size();
     window.clear(sf::Color::Black);
     for (int i = 0; i < heights.size(); i++) {
         sf::RectangleShape rectangle(sf::Vector2f(rec_width, heights[i]));
-        rectangle.setFillColor(sf::Color(200, 200, 200));
+        if(i == first) {
+            rectangle.setFillColor(sf::Color(21, 141, 2));
+        } else if (i == second){
+            rectangle.setFillColor(sf::Color(212, 0, 0));
+        } else {
+            rectangle.setFillColor(sf::Color(200, 200, 200));
+        }
         rectangle.setPosition(i*rec_width, SCREEN_HEIGHT-heights[i]);
         window.draw(rectangle);
     } 
     window.display();
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+}
+
+void drawSorted(std::vector<int> heights, sf::RenderWindow &window) {
+    float rec_width = (float)SCREEN_WIDHT/heights.size();
+    for (int i = 0; i < heights.size(); i++) {
+        sf::RectangleShape rectangle(sf::Vector2f(rec_width, heights[i]));
+        rectangle.setFillColor(sf::Color(21, 141, 2));
+        rectangle.setPosition(i*rec_width, SCREEN_HEIGHT-heights[i]);
+        window.draw(rectangle);
+        window.display();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    } 
 }
 
 void bubbleSort(std::vector<int> array, unsigned int length, sf::RenderWindow &window) {
@@ -67,14 +86,16 @@ void bubbleSort(std::vector<int> array, unsigned int length, sf::RenderWindow &w
 
             if (array[j] > array[j + 1]) {
  
-                std::swap(array[j], array[j+1]);            
-                drawRectangles(array, window);
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                drawRectangles(array, window, j, j+1);
+                std::swap(array[j], array[j+1]);
+                drawRectangles(array, window, j+1, j);
                 changed = true; 
             } 
         } 
-        if (changed == false)
+        if (changed == false) {
+            drawSorted(array, window);
             return;
+        }
     }     
 }
 
@@ -85,6 +106,7 @@ int main(int argc, char const *argv[])
     for (int i = 0; i < heights.size(); i++) {
         std::cout<<heights[i]<<std::endl;
     }
+    drawRectangles(heights, window, -1, -1);
     while (window.isOpen())
     {
         sf::Event event;
@@ -93,7 +115,6 @@ int main(int argc, char const *argv[])
             if(event.type == sf::Event::Closed)
                 window.close();
         }
-        drawRectangles(heights, window);
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
             bubbleSort(heights, heights.size(), window);
         }
